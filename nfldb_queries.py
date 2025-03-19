@@ -6,7 +6,7 @@ import sqlite3
 import os
 import pandas as pd
 
-os.chdir('path/to/your/databse')
+os.chdir('/Users/chadgahafer/Desktop/Scripts/databases')
 conn = sqlite3.connect('nfldb.sqlite')
 cur = conn.cursor()
 
@@ -77,11 +77,58 @@ def team_offensive_averages_since_1970():
     conn.close()
     return df
 
+def offensive_season_averages_by_year_since_1970():
+    sql = '''SELECT season,
+                AVG(games) AS games,
+                AVG(rush_attempts) AS rush_attempts, 
+                AVG(rush_yards) AS rush_yards,
+                AVG(rush_tds) AS rush_tds,
+                AVG(fumbles) AS fumbles,
+                AVG(rush_expected_points) AS rush_expected_points,
+                AVG(pass_attempts) AS pass_attempts,
+                AVG(completions) AS completions ,
+                AVG(pass_yards + sack_yards) AS pass_yards,
+                AVG(pass_tds) AS pass_touchdowns,
+                AVG(interceptions) AS interceptions,
+                AVG(sacks) AS sacks,
+                AVG(sack_yards) AS sack_yards_lost,
+                AVG( fourth_quarter_comebacks) AS fourth_quarter_comebacks,
+                AVG(game_winning_drives)  AS game_winning_drives,
+                AVG(pass_expected_points) AS pass_expected_points,
+                AVG(pass_yards + sack_yards + rush_yards) AS total_yards
+            FROM season_offensive_stats AS "sos"
+            WHERE season > 1969
+            GROUP BY season;'''
+    df = pd.read_sql_query(sql, conn)
+    conn.close()
+    return df
+
+def o_stats_per_game_avg_since_1970():
+    sql = '''SELECT season,
+                AVG(games) AS games,
+                AVG(rush_attempts) / games AS rush_attempts, 
+                AVG(rush_yards) / games AS rush_yards,
+                AVG(rush_tds) / games  AS rush_tds,
+                AVG(fumbles) / games  AS fumbles,
+                AVG(rush_expected_points) / games  AS rush_expected_points,
+                AVG(pass_attempts) / games  AS pass_attempts,
+                AVG(completions) / games  AS completions ,
+                AVG(pass_yards + sack_yards) / games AS pass_yards,
+                AVG(pass_tds) / games  AS pass_touchdowns,
+                AVG(interceptions) / games  AS interceptions,
+                AVG(sacks) / games AS sacks,
+                AVG(sack_yards) / games  AS sack_yards_lost,
+                AVG( fourth_quarter_comebacks) / games  AS fourth_quarter_comebacks,
+                AVG(game_winning_drives) / games  AS game_winning_drives,
+                AVG(pass_expected_points) / games AS pass_expected_points,
+                AVG(pass_yards + sack_yards + rush_yards) / games AS total_yards
+            FROM season_offensive_stats AS "sos"
+            WHERE season > 1969
+            GROUP BY season'''
+    df = pd.read_sql_query(sql, conn)
+    conn.close()
+    return df
+
 if __name__ == "__main__":
     x = season_average_rush_attempts()
     print(x)
-
-
-
-
-
