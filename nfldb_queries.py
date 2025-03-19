@@ -6,7 +6,7 @@ import sqlite3
 import os
 import pandas as pd
 
-os.chdir('/Users/chadgahafer/Desktop/Scripts/databases')
+os.chdir('path/to/your/databse')
 conn = sqlite3.connect('nfldb.sqlite')
 cur = conn.cursor()
 
