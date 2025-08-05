@@ -129,6 +129,31 @@ def o_stats_per_game_avg_since_1970():
     conn.close()
     return df
 
+def off_and_def_expected_points_joined():
+    sql = '''SELECT (teams.location || " " || teams.name) AS team,
+                off_stats.season,
+                off_stats.pass_expected_points AS off_pass_epa,
+                off_stats.rush_expected_points AS off_rush_epa,
+                def_stats.pass_expected_points AS def_pass_epa,
+                def_stats.rush_expected_points AS def_rush_epa,
+                (off_stats.pass_expected_points + off_stats.rush_expected_points) AS total_off_epa,
+                (def_stats.pass_expected_points + def_stats.rush_expected_points) AS total_def_epa,
+                (CAST(rec.wins AS REAL) / (rec.wins + rec.losses + rec.ties)) AS win_pct
+            FROM season_offensive_stats AS off_stats
+            LEFT JOIN season_defensive_stats AS def_stats
+                ON off_stats.team_id = def_stats.team_id AND off_stats.season = def_stats.season
+            LEFT JOIN season_records AS rec 
+                ON off_stats.team_id = rec.team_id AND off_stats.season = rec.season
+            LEFT JOIN teams
+                ON teams.id = off_stats.team_id
+            WHERE off_stats.pass_expected_points IS NOT NULL 
+                AND off_stats.rush_expected_points IS NOT NULL
+                AND def_stats.pass_expected_points IS NOT NULL
+                AND def_stats.rush_expected_points IS NOT NULL'''
+    df = pd.read_sql_query(sql, conn)
+    conn.close()
+    return df
+
 if __name__ == "__main__":
     x = season_average_rush_attempts()
     print(x)
