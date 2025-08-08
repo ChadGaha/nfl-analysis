@@ -134,10 +134,20 @@ def off_and_def_expected_points_joined():
                 off_stats.season,
                 off_stats.pass_expected_points AS off_pass_epa,
                 off_stats.rush_expected_points AS off_rush_epa,
+                off_stats.rush_attempts AS off_rush_attempts,
+                (off_stats.rush_expected_points / off_stats.rush_attempts) AS off_rush_epa_play,
+                off_stats.rush_attempts AS off_rush_attempts,
+                (off_stats.pass_expected_points / off_stats.pass_attempts) AS off_pass_epa_play,
                 def_stats.pass_expected_points AS def_pass_epa,
                 def_stats.rush_expected_points AS def_rush_epa,
+                def_stats.rush_attempts AS def_rush_attempts,
+                (def_stats.rush_expected_points / def_stats.rush_attempts) AS def_rush_epa_play,
+                def_stats.pass_attempts AS def_pass_attempts,
+                (def_stats.pass_expected_points / def_stats.pass_attempts) AS def_pass_epa_play,
                 (off_stats.pass_expected_points + off_stats.rush_expected_points) AS total_off_epa,
+                ((off_stats.pass_expected_points + off_stats.rush_expected_points) / (off_stats.rush_attempts + off_stats.pass_attempts)) AS total_off_epa_play,
                 (def_stats.pass_expected_points + def_stats.rush_expected_points) AS total_def_epa,
+                ((def_stats.pass_expected_points + def_stats.rush_expected_points) / (def_stats.rush_attempts + def_stats.pass_attempts)) AS total_def_epa_play,
                 (CAST(rec.wins AS REAL) / (rec.wins + rec.losses + rec.ties)) AS win_pct
             FROM season_offensive_stats AS off_stats
             LEFT JOIN season_defensive_stats AS def_stats
@@ -150,6 +160,61 @@ def off_and_def_expected_points_joined():
                 AND off_stats.rush_expected_points IS NOT NULL
                 AND def_stats.pass_expected_points IS NOT NULL
                 AND def_stats.rush_expected_points IS NOT NULL'''
+    df = pd.read_sql_query(sql, conn)
+    conn.close()
+    return df
+
+
+def most_wins_2020():
+    sql = '''SELECT (teams.location || " " || teams.name) AS team, season_records.wins
+            FROM season_records
+            LEFT JOIN teams
+                ON season_records.team_id = teams.id
+            WHERE season = 2020
+            ORDER BY wins DESC
+            LIMIT 1'''
+    df = pd.read_sql_query(sql, conn)
+    conn.close()
+    return df
+
+def seasons_team_8wins_8losses():
+    sql = '''SELECT DISTINCT(season)
+            FROM season_records
+            WHERE wins = 8 AND losses = 8'''
+    df = pd.read_sql_query(sql, conn)
+    conn.close()
+    return df
+
+def pos_pt_diff_2021():
+    sql = '''SELECT (t.location || " " || t.name) AS team, sr.point_differential
+            FROM season_records AS sr
+            LEFT JOIN teams AS t
+            ON sr.team_id = t.id
+            WHERE season = 2021 AND point_differential > 0'''
+    df = pd.read_sql_query(sql, conn)
+    conn.close()
+    return df
+
+def fewest_points_2019():
+    sql = '''SELECT (t.location || " " || t.name) AS team, sr.points_allowed
+            FROM season_records AS sr
+            LEFT JOIN teams AS t
+                ON sr.team_id = t.id
+            WHERE season = 2019
+            ORDER BY points_allowed ASC
+            LIMIT 1'''
+    df = pd.read_sql_query(sql, conn)
+    conn.close()
+    return df
+
+
+def top5_forced_points():
+    sql = '''SELECT (t.location || " " || t.name) AS team, sr.points_forced, sr.season
+            FROM season_records AS sr
+            LEFT JOIN teams AS t
+                ON sr.team_id = t.id
+            ORDER BY points_forced DESC
+            LIMIT 5'''
     df = pd.read_sql_query(sql, conn)
     conn.close()
     return df
